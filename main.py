@@ -1,47 +1,14 @@
 import requests
-import base64
 from urllib.parse import urlencode
-import os
-from dotenv import load_dotenv
+from auth import get_api_token, get_user_token, create_spotify_oauth
 
-load_dotenv()
-
-
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET =os.getenv("CLIENT_SECRET")
 # Replace 'USER_ID' with the user ID of your Spotify account
-USER_ID='' #need this
+# USER_ID='' #need this
 # Replace 'AUTHORIZATION_CODE' with the authorization code you obtain after the user logs in and grants access
-AUTHORIZATION_CODE = 'YOUR_AUTHORIZATION_CODE'
+# AUTHORIZATION_CODE = 'YOUR_AUTHORIZATION_CODE'
 
 user_id = 'YOUR_USER_ID'
 PLAYLIST_NAME='all songs from apple'
-
-def get_api_token(client_id, client_secret):
-    token_url = 'https://accounts.spotify.com/api/token'
-    headers = {'Authorization': 'Basic ' + base64.b64encode(f'{client_id}:{client_secret}'.encode()).decode()}
-    data = {'grant_type': 'client_credentials'}
-
-    response = requests.post(token_url, headers=headers, data=data)
-    access_token = response.json().get('access_token')
-
-    return access_token
-
-
-def get_user_token(client_id, client_secret, code): #redirect_uri
-    token_url = 'https://accounts.spotify.com/api/token'
-    headers = {'Authorization': 'Basic ' + base64.b64encode(f'{client_id}:{client_secret}'.encode()).decode()}
-    data = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': ''#redirect_uri,
-    }
-
-    response = requests.post(token_url, headers=headers, data=data)
-    access_token = response.json().get('access_token')
-
-    return access_token
-
 
 def get_spotify_id(song_title, access_token):
     base_url = 'https://api.spotify.com/v1/search'
@@ -81,16 +48,18 @@ def add_tracks_to_playlist(access_token, playlist_id, track_uris):
 
     return response.status_code == 201
 
+
 # Replace the list below with your array of song titles
 song_titles = ['Cries in vein', 'Lemonade', 'Trapper']
 
 
-# Get the access token using the client credentials flow
-api_token = get_api_token(CLIENT_ID, CLIENT_SECRET)
+#AUTH 
+token = create_spotify_oauth()
+api_token = get_api_token(token)
+user_token = get_user_token() #need arg here
 
-user_token = get_user_token(CLIENT_ID, CLIENT_SECRET)
 
-playlist_id = create_playlist(user_token, user_id, playlist_name)
+playlist_id = create_playlist(user_token, user_id, PLAYLIST_NAME)
 print('playlist_id is')
 print(playlist_id)
 
