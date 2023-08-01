@@ -4,8 +4,8 @@ from excel_helper import extract_data_from_excel, write_spotify_uid_to_excel
 USER_ID = 'br18lp7xinjotspsyry15qyrk'
 PLAYLIST_NAME='all songs from apple'
 
-def get_spotify_uri(metadata): #make this plural and send in array first
-    query = f'track:{metadata.title} artist:{metadata.artist}'
+def get_spotify_uri(title, artist): #make this plural and send in array first
+    query = f'track:{title} artist:{artist}'
     data = spotify.search(query, limit=1)
 
     if 'tracks' in data and 'items' in data['tracks'] and data['tracks']['items']:
@@ -20,7 +20,9 @@ def add_tracks_to_playlist(track_uris, spotify_client): # need a list of track U
 
 #list of dictionaries for artist and song
 apple_music_metadata = extract_data_from_excel()
-test = [apple_music_metadata[0], apple_music_metadata[1], {'title': 'blahasdf', 'artist': 'notrealfakeartist'}]
+test = [apple_music_metadata[0], {'title': 'A-Town (feat. Marlo)', 'artist': 'Lil Baby'}, {'title': 'blahasdf', 'artist': 'notrealfakeartist'}]
+#quick note, spotify does not like feat.
+
 
 spotify = spotipy_oauth()
 
@@ -35,13 +37,19 @@ results = [] #update this name
 
 # need to wrap this logic in a function
 for metadata in test: #apple_music_metadata
-    spotify_id = get_spotify_uri(metadata)
+    spotify_id = get_spotify_uri(metadata['title'], metadata['artist'])
     #if spotify_id is not 'NOT FOUND':
     results.append(spotify_id)
    #write the spotify id to excel here
 write_spotify_uid_to_excel(results)
 
 print("Spotify URI's of the songs:")
+print(results)
+try:
+    while True:
+        results.remove('NOT FOUND')
+except ValueError:
+    pass
 print(results)
 
 add_tracks_to_playlist(results, spotify)
