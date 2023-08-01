@@ -14,3 +14,14 @@ def extract_data_from_excel():
 
     wb.close()
     return data_list
+
+def write_spotify_uid_to_excel(list):
+    wb = openpyxl.load_workbook(path)
+    sheet = wb.active
+
+    # Start writing from the second row (skipping the header row)
+    for i, spotify_uid in enumerate(list, start=2):
+        sheet.cell(row=i, column=6, value=spotify_uid)
+
+    wb.save(path)
+    wb.close()
