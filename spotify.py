@@ -1,5 +1,6 @@
 from auth import spotipy_oauth
 from excel_helper import extract_data_from_excel, write_spotify_uid_to_excel
+import time
 
 USER_ID = 'br18lp7xinjotspsyry15qyrk'
 PLAYLIST_NAME='all songs from apple'
@@ -36,10 +37,13 @@ results = [] #update this name
 
 
 # need to wrap this logic in a function
-for metadata in test: #apple_music_metadata
-    spotify_id = get_spotify_uri(metadata['title'], metadata['artist'])
+for metadata in apple_music_metadata: #apple_music_metadata
+    spotify_uri = get_spotify_uri(metadata['title'], metadata['artist'])
+    print('spotify uri for:', metadata['title'])
+    print(spotify_uri)
     #if spotify_id is not 'NOT FOUND':
-    results.append(spotify_id)
+    results.append(spotify_uri)
+    time.sleep(60/175) #adding this bc spotify has governor limits of around 180 requests per minute (this will be about 175)
    #write the spotify id to excel here
 write_spotify_uid_to_excel(results)
 
