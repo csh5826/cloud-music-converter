@@ -1,5 +1,5 @@
 from auth import spotipy_oauth
-from excel_helper import extract_data_from_excel, write_spotify_uid_to_excel
+from excel_helper import extract_title_and_artist_from_excel, write_spotify_uid_to_excel, extract_uid_from_excel
 import time
 
 USER_ID = 'br18lp7xinjotspsyry15qyrk'
@@ -15,12 +15,13 @@ def get_spotify_uri(title, artist): #make this plural and send in array first
     else: #lets return 'NOT FOUND'
         return 'NOT FOUND'
 
-def add_tracks_to_playlist(track_uris, spotify_client): # need a list of track URIs
-    spotify_client.playlist_add_items(PLAYLIST_ID, track_uris)
+def add_tracks_to_playlist(track_uris): # need a list of track URIs
+    print('Processing these tracks:', track_uris)
+    spotify.playlist_add_items(PLAYLIST_ID, track_uris)
     return f'Your playlist: {PLAYLIST_NAME} has been updated'
 
 #list of dictionaries for artist and song
-apple_music_metadata = extract_data_from_excel()
+apple_music_metadata = extract_title_and_artist_from_excel()
 test = [apple_music_metadata[0], {'title': 'A-Town (feat. Marlo)', 'artist': 'Lil Baby'}, {'title': 'blahasdf', 'artist': 'notrealfakeartist'}]
 #quick note, spotify does not like feat.
 
@@ -33,27 +34,33 @@ PLAYLIST_ID = '47VW4a6XXezcUi9Ev2MZiP'
 # playlist_id = create_playlist(api_token, user_id, PLAYLIST_NAME)
 
 # Store the results in an array
-results = [] #update this name
+ #update this name
 
 
 # need to wrap this logic in a function
-for metadata in apple_music_metadata: #apple_music_metadata
-    spotify_uri = get_spotify_uri(metadata['title'], metadata['artist'])
-    print('spotify uri for:', metadata['title'])
-    print(spotify_uri)
-    #if spotify_id is not 'NOT FOUND':
-    results.append(spotify_uri)
-    time.sleep(60/175) #adding this bc spotify has governor limits of around 180 requests per minute (this will be about 175)
+def grab_uids_and_append_to_excel():
+    results = []
+    for metadata in apple_music_metadata: #apple_music_metadata
+        spotify_uri = get_spotify_uri(metadata['title'], metadata['artist'])
+        print('spotify uri for:', metadata['title'])
+        print(spotify_uri)
+        #if spotify_id is not 'NOT FOUND':
+        results.append(spotify_uri)
+        time.sleep(60/175) #adding this bc spotify has governor limits of around 180 requests per minute (this will be about 175)
    #write the spotify id to excel here
-write_spotify_uid_to_excel(results)
+    write_spotify_uid_to_excel(results)
+    try:
+        while True:
+            results.remove('NOT FOUND')
+    except ValueError:
+        pass
 
-print("Spotify URI's of the songs:")
-print(results)
-try:
-    while True:
-        results.remove('NOT FOUND')
-except ValueError:
-    pass
-print(results)
+uid_list = extract_uid_from_excel()
 
-add_tracks_to_playlist(results, spotify)
+def register_songs_to_playlist(uid_list):
+  for i in range(0, len(uid_list), 10):
+      batch = uid_list[i:i + 10]
+      add_tracks_to_playlist(batch)
+      time.sleep(60/175)
+
+register_songs_to_playlist(uid_list)
