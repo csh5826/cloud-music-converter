@@ -97,6 +97,10 @@ def remove_rows_without_spotify_uid(input_file, output_file):
     output_workbook = openpyxl.Workbook()
     output_sheet = output_workbook.active
 
+    # Copy the header row to the output sheet
+    header_row = next(input_sheet.iter_rows(values_only=True))
+    output_sheet.append(header_row)
+
     # Copy only the rows with a value of 'NOT FOUND' in the Spotify UID column
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
         spotify_uid = row[5]  # Assuming column 6 is the 'Spotify UID' column
