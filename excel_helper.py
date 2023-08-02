@@ -98,7 +98,7 @@ def remove_rows_without_spotify_uid(input_file, output_file):
     output_sheet = output_workbook.active
 
     # Copy only the rows with a value of 'NOT FOUND' in the Spotify UID column
-    for row in input_sheet.iter_rows(values_only=True):
+    for row in input_sheet.iter_rows(min_row=2, values_only=True):
         spotify_uid = row[5]  # Assuming column 6 is the 'Spotify UID' column
         if spotify_uid == 'NOT FOUND':
             output_sheet.append(row)
@@ -106,10 +106,10 @@ def remove_rows_without_spotify_uid(input_file, output_file):
     # Save the new workbook to the output file
     output_workbook.save(output_file)
 
-# def handle_not_found_uids(name, columns, existing_excel_path, new_path):
-#     copy_sheet_data(existing_excel_path, new_path)
+def handle_not_found_uids(name, columns, existing_excel_path, new_path):
+    copy_sheet_data(existing_excel_path, new_path)
 
-#     write_spotify_uid_to_excel(not_found_list, new_path)
+    write_spotify_uid_to_excel(not_found_list, new_path)
 
  # we want to:
 #  1. create a new excel sheet
