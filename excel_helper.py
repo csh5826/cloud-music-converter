@@ -4,9 +4,9 @@ import os
 # og_path = './data/all songs from apple.xlsx'
 #updated_path = './data/all songs with uri.xlsx'
 
-def extract_title_and_artist_from_excel():
+def extract_title_and_artist_from_excel(path):
     data_list = []
-    wb = openpyxl.load_workbook(og_path)
+    wb = openpyxl.load_workbook(path)
     sheet = wb.active
 
     # Assuming column 1 is 'title' and column 3 is 'artist'
@@ -16,23 +16,6 @@ def extract_title_and_artist_from_excel():
 
     wb.close()
     return data_list
-
-# def extract_uid_from_excel(not_found, path):
-#     uid_list = []
-#     wb = openpyxl.load_workbook(path)
-#     sheet = wb.active
-
-#     for row in sheet.iter_rows(min_row=2, values_only=True):
-#         spotify_uid = row[5]  # Extract title and artist from the row
-#         if not_found is False:
-#             if spotify_uid and spotify_uid != 'NOT FOUND': #can definitely clean this up
-#                 uid_list.append(spotify_uid)
-#         else:
-#             if spotify_uid and spotify_uid is 'NOT FOUND':
-#                 uid_list.append(spotify_uid)
-
-#     wb.close()
-#     return uid_list
 
 def extract_uid_from_excel(path):
     uid_list = []
@@ -88,6 +71,19 @@ def write_spotify_uid_to_excel(uid_list, path):
 
 #     destination_workbook.save(new_path)
 
+def load_copy_create_helper(input_file, output_file): ##look into adding this for line 87 func
+    # Load the workbook and active sheet from the input file
+    input_workbook = openpyxl.load_workbook(input_file)
+    input_sheet = input_workbook.active #
+
+    # Create a new workbook and sheet for the filtered data
+    output_workbook = openpyxl.Workbook()
+    output_sheet = output_workbook.active
+
+    # Copy the header row to the output sheet
+    header_row = next(input_sheet.iter_rows(values_only=True))
+    output_sheet.append(header_row)
+
 def remove_rows_without_spotify_uid(input_file, output_file):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
@@ -110,14 +106,29 @@ def remove_rows_without_spotify_uid(input_file, output_file):
     # Save the new workbook to the output file
     output_workbook.save(output_file)
 
-def handle_not_found_uids(name, columns, existing_excel_path, new_path):
-    copy_sheet_data(existing_excel_path, new_path)
+def remove_parentheses_from_column(input_file, output_file, column_index):
+    # Load the workbook and active sheet from the input file
+    input_workbook = openpyxl.load_workbook(input_file)
+    input_sheet = input_workbook.active
 
-    write_spotify_uid_to_excel(not_found_list, new_path)
+    # Create a new workbook and sheet for the modified data
+    output_workbook = openpyxl.Workbook()
+    output_sheet = output_workbook.active
 
- # we want to:
-#  1. create a new excel sheet
- # 2. copy over the updated one with all uris
- # remove all rows that have do not have a row value of 'not found' for spotify UID
+    # Copy the header row to the output sheet
+    header_row = next(input_sheet.iter_rows(values_only=True))
+    output_sheet.append(header_row)
 
-#flow is : create_excel_sheet -> extract_uid_from_excel(file_path, True) --> write_spotify_uid_to_excel
+    # Copy the data with parentheses removed to the output sheet
+    for row in input_sheet.iter_rows(min_row=2, values_only=True):
+        original_value = row[column_index - 1]
+        if isinstance(original_value, str) and "(" in original_value:
+            modified_value = original_value.split('(')[0].strip()
+        else:
+            modified_value = original_value
+        row = list(row)
+        row[column_index - 1] = modified_value
+        output_sheet.append(row)
+
+    # Save the new workbook to the output file
+    output_workbook.save(output_file)
