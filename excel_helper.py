@@ -18,26 +18,26 @@ def extract_title_and_artist_from_excel(path, sheet_name):
     wb.close()
     return data_list
 
-def extract_uid_from_excel(path, sheet_name):
-    uid_list = []
+def extract_uri_from_excel(path, sheet_name):
+    uri_list = []
     wb = openpyxl.load_workbook(path)
     sheet = wb[sheet_name]
 
     for row in sheet.iter_rows(min_row=2, values_only=True):
-        spotify_uid = row[5]  # Extract title and artist from the row
-        if spotify_uid and spotify_uid != 'NOT FOUND':
-            uid_list.append(spotify_uid)
+        spotify_uri = row[5]  # Extract title and artist from the row
+        if spotify_uri and spotify_uri != 'NOT FOUND':
+            uri_list.append(spotify_uri)
 
     wb.close()
-    return uid_list
+    return uri_list
 
-def write_spotify_uid_to_excel(uid_list, path, sheet_name):
+def write_spotify_uri_to_excel(uri_list, path, sheet_name):
     wb = openpyxl.load_workbook(path)                           
     sheet = wb[sheet_name]
 
     # Start writing from the second row (skipping the header row)
-    for i, spotify_uid in enumerate(uid_list, start=2):
-        sheet.cell(row=i, column=6, value=spotify_uid)
+    for i, spotify_uri in enumerate(uri_list, start=2):
+        sheet.cell(row=i, column=6, value=spotify_uri)
 
     wb.save(path)
     wb.close()
@@ -55,7 +55,7 @@ def load_copy_create_helper(input_file, output_file): ##look into adding this fo
     header_row = next(input_sheet.iter_rows(values_only=True))
     output_sheet.append(header_row)
 
-def remove_rows_without_spotify_uid(input_file, output_file, sheet_name):
+def remove_rows_without_spotify_uri(input_file, output_file, sheet_name):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
     input_sheet = input_workbook[sheet_name] #CHANGE LOGIC HERE TO SHEET NAME
@@ -72,10 +72,10 @@ def remove_rows_without_spotify_uid(input_file, output_file, sheet_name):
     output_sheet.append(header_row)
     valid_rows = []
 
-    # Copy only the rows with a value of 'NOT FOUND' in the Spotify UID column else append a valid row to 
+    # Copy only the rows with a value of 'NOT FOUND' in the Spotify uri column else append a valid row to 
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
-        spotify_uid = row[5]  # Assuming column 6 is the 'Spotify UID' column
-        if spotify_uid == 'NOT FOUND':
+        spotify_uri = row[5]  # Assuming column 6 is the 'Spotify uri' column
+        if spotify_uri == 'NOT FOUND':
             output_sheet.append(row)
         else:
             valid_rows.append(row)
