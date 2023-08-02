@@ -62,8 +62,9 @@ spotify = spotipy_oauth()
 my_playlist_names = get_sheet_names(og_path)
 my_playlist_names.pop(0)
 
-playlist_metadata = create_playlists(my_playlist_names)
-# FOR LOOP HERE 
+test_names = [my_playlist_names[5], my_playlist_names[6], my_playlist_names[7]]
+playlist_metadata = create_playlists(test_names)
+
 for entry in playlist_metadata:
     song_metadata = extract_title_and_artist_from_excel(og_path, entry['name'])
     print(song_metadata)

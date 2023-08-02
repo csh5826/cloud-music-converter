@@ -60,13 +60,16 @@ def remove_rows_without_spotify_uri(input_file, output_file, sheet_name):
     input_workbook = openpyxl.load_workbook(input_file)
     input_sheet = input_workbook[sheet_name] #CHANGE LOGIC HERE TO SHEET NAME
 
-    # Create a new workbook and sheet for the filtered data
-    output_workbook = openpyxl.Workbook()
-    try:
-        output_sheet = output_workbook[sheet_name]
-    except KeyError:
-        output_sheet = output_workbook.create_sheet(sheet_name) 
-
+    # Check if output file exists
+    if os.path.exists(output_file):
+        output_workbook = openpyxl.load_workbook(output_file)
+        if sheet_name in output_workbook.sheetnames:
+            output_sheet = output_workbook[sheet_name]
+        else:
+            output_sheet = output_workbook.create_sheet(sheet_name)
+    else:
+        output_workbook = openpyxl.Workbook()
+        output_sheet = output_workbook.create_sheet(sheet_name)
     # Copy the header row to the output sheet
     header_row = next(input_sheet.iter_rows(values_only=True))
     output_sheet.append(header_row)
@@ -76,6 +79,8 @@ def remove_rows_without_spotify_uri(input_file, output_file, sheet_name):
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
         spotify_uri = row[5]  # Assuming column 6 is the 'Spotify uri' column
         if spotify_uri == 'NOT FOUND':
+            print('appending not found row:')
+            print(row)
             output_sheet.append(row)
         else:
             valid_rows.append(row)
