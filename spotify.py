@@ -56,13 +56,13 @@ spotify = spotipy_oauth()
 #apple_music_metadata = extract_title_and_artist_from_excel(og_path)
 #quick note, spotify does not like feat.
 # remove_parentheses_from_column(not_found_path, not_found_no_title_parentheses, 1)
-# not_found_metadata = extract_title_and_artist_from_excel(not_found_no_title_parentheses)
+not_found_metadata = extract_title_and_artist_from_excel(not_found_path)
 # print(not_found_metadata)
-# grab_uids_and_append_to_excel(not_found_metadata, not_found_no_title_parentheses)
+# grab_uids_and_append_to_excel(not_found_metadata, not_found_path)
 
 # uid_list = extract_uid_from_excel(updated_path)
 
-uid_list = extract_uid_from_excel(not_found_no_title_parentheses)
+uid_list = extract_uid_from_excel(not_found_path)
 print(uid_list)
 
-register_songs_to_playlist(uid_list)
+# register_songs_to_playlist(uid_list)
