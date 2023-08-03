@@ -55,32 +55,36 @@ def load_copy_create_helper(input_file, output_file): ##look into adding this fo
     header_row = next(input_sheet.iter_rows(values_only=True))
     output_sheet.append(header_row)
 
-def remove_rows_without_spotify_uri(input_file, output_file, sheet_name):
+def separate_valid_uris_and_invalid_uris(input_file, output_file, sheet_name, multiple_attempts = False):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
-    input_sheet = input_workbook[sheet_name] #CHANGE LOGIC HERE TO SHEET NAME
+    input_sheet = input_workbook[sheet_name]
 
     # Check if output file exists
     if os.path.exists(output_file):
         output_workbook = openpyxl.load_workbook(output_file)
         if sheet_name in output_workbook.sheetnames:
             output_sheet = output_workbook[sheet_name]
+            # for row in output_sheet.iter_rows(values_only=False):
+            #     for cell in row:
+            #         if cell.row > 1:
+            #             cell.value = None 
         else:
             output_sheet = output_workbook.create_sheet(sheet_name)
     else:
         output_workbook = openpyxl.Workbook()
         output_sheet = output_workbook.create_sheet(sheet_name)
     # Copy the header row to the output sheet
-    header_row = next(input_sheet.iter_rows(values_only=True))
-    output_sheet.append(header_row)
+    if output_sheet.max_row == 1:
+        header_row = next(input_sheet.iter_rows(values_only=True))
+        output_sheet.append(header_row)
+    output_sheet.delete_rows(idx=2, amount=output_sheet.max_row - 1) #to ensure we are at a fresh start each time
     valid_rows = []
 
     # Copy only the rows with a value of 'NOT FOUND' in the Spotify uri column else append a valid row to 
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
         spotify_uri = row[5]  # Assuming column 6 is the 'Spotify uri' column
         if spotify_uri == 'NOT FOUND':
-            print('appending not found row:')
-            print(row)
             output_sheet.append(row)
         else:
             valid_rows.append(row)
@@ -94,29 +98,43 @@ def remove_rows_without_spotify_uri(input_file, output_file, sheet_name):
     output_workbook.save(output_file)
     input_workbook.save(input_file)
 
+#ACTUALLY WHAT WE WANT TO DO IS REMOVE ALL NON EXISTING AND JSUT REPOPULATE
 def remove_parentheses_from_column(input_file, output_file, column_index, sheet_name):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
     input_sheet = input_workbook[sheet_name] 
 
-    # Create a new workbook and sheet for the modified data
-    output_workbook = openpyxl.Workbook()
-    output_sheet = output_workbook[sheet_name] 
+    #Create or load workbook and sheet
+    if os.path.exists(output_file):
+        output_workbook = openpyxl.load_workbook(output_file)
+        if sheet_name in output_workbook.sheetnames:
+            output_sheet = output_workbook[sheet_name]
+        else:
+            output_sheet = output_workbook.create_sheet(sheet_name)
+    else:
+        output_workbook = openpyxl.Workbook()
+        output_sheet = output_workbook.create_sheet(sheet_name)
 
     # Copy the header row to the output sheet
-    header_row = next(input_sheet.iter_rows(values_only=True))
-    output_sheet.append(header_row)
+    if output_sheet.max_row == 1:
+        print('header row')
+        header_row = next(input_sheet.iter_rows(values_only=True))
+        print(header_row)
+        output_sheet.append(header_row)
 
     # Copy the data with parentheses removed to the output sheet
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
         original_value = row[column_index - 1]
         if isinstance(original_value, str) and "(" in original_value:
+            print('original_value', original_value)
             modified_value = original_value.split('(')[0].strip()
+            print('modified value', modified_value)
         else:
             modified_value = original_value
         row = list(row)
         row[column_index - 1] = modified_value
         output_sheet.append(row)
+        print('row being appended:', row)
 
     # Save the new workbook to the output file
     output_workbook.save(output_file)
