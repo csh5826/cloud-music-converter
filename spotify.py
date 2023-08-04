@@ -3,11 +3,10 @@ from excel_helper import extract_title_and_artist_from_excel, write_spotify_uri_
 import time
 import os
 from dotenv import load_dotenv
-# PROBABLY WORTH MAKING EXCEL_HELPER INTO ITS OWN CLASS
+
 load_dotenv()
 
 USER_ID = os.getenv("USER_ID")
-PLAYLIST_NAME='all songs from apple'
 og_path = './data/all songs from apple.xlsx'
 updated_path = './data/all songs with uri.xlsx'
 not_found_path = './data/all songs with not found uri.xlsx'
@@ -82,18 +81,13 @@ def second_iteration(playlist_info):
 # for the second iteration, we want to go back through the all songs with not found and remove the ones that were found
 spotify = spotipy_oauth()
 my_playlist_names = get_sheet_names(og_path)
-print(my_playlist_names)
-my_playlist_names.pop(0)
-# playlist_metadata = create_playlists(my_playlist_names)
 
-# first_iteration(playlist_metadata)
-# second_iteration(playlist_metadata)
+#my_playlist_names.pop(0)
+playlist_metadata = create_playlists(['spice (pepper)'])
+
+first_iteration(playlist_metadata)
+second_iteration(playlist_metadata)
 
 # print('all songs captured on the second attempt')
 # print(len(test_second_uris))
 # print(test_second_uris)
-
-
-
-#quick note, spotify does not like feat.
-# remove_parentheses_from_column(not_found_path, not_found_no_title_parentheses, 1)

@@ -1,9 +1,6 @@
 import openpyxl
 import os
 
-# og_path = './data/all songs from apple.xlsx'
-#updated_path = './data/all songs with uri.xlsx'
-
 def extract_title_and_artist_from_excel(path, sheet_name):
     data_list = []
     wb = openpyxl.load_workbook(path)
@@ -42,42 +39,37 @@ def write_spotify_uri_to_excel(uri_list, path, sheet_name):
     wb.save(path)
     wb.close()
 
-def load_copy_create_helper(input_file, output_file): ##look into adding this for line 87 func
-    # Load the workbook and active sheet from the input file
-    input_workbook = openpyxl.load_workbook(input_file)
-    input_sheet = input_workbook.active #
 
-    # Create a new workbook and sheet for the filtered data
-    output_workbook = openpyxl.Workbook()
-    output_sheet = output_workbook.active
+def load_or_create_output_sheet(output_file, output_sheet_name, header_row):
+    # Check if output file exists
+    if os.path.exists(output_file):
+        output_workbook = openpyxl.load_workbook(output_file)
+        if output_sheet_name in output_workbook.sheetnames:
+            output_sheet = output_workbook[output_sheet_name]
+        else:
+            output_sheet = output_workbook.create_sheet(output_sheet_name)
+    else:
+        output_workbook = openpyxl.Workbook()
+        output_sheet = output_workbook.create_sheet(output_sheet_name)
 
-    # Copy the header row to the output sheet
-    header_row = next(input_sheet.iter_rows(values_only=True))
-    output_sheet.append(header_row)
+    # Copy the header row to the output sheet if it's empty
+    print('max row is for output file is:', output_sheet.max_row)
+    print('output file is', output_file)
+    print(output_sheet.max_row)
+    if output_sheet.max_row == 0:
+        print('WE ARE APPENDING A NEW ROW')
+        output_sheet.append(header_row)
+        print(header_row)
 
-def separate_valid_uris_and_invalid_uris(input_file, output_file, sheet_name, multiple_attempts = False):
+    return output_workbook, output_sheet
+
+def separate_valid_uris_and_invalid_uris(input_file, output_file, sheet_name):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
     input_sheet = input_workbook[sheet_name]
 
-    # Check if output file exists
-    if os.path.exists(output_file):
-        output_workbook = openpyxl.load_workbook(output_file)
-        if sheet_name in output_workbook.sheetnames:
-            output_sheet = output_workbook[sheet_name]
-            # for row in output_sheet.iter_rows(values_only=False):
-            #     for cell in row:
-            #         if cell.row > 1:
-            #             cell.value = None 
-        else:
-            output_sheet = output_workbook.create_sheet(sheet_name)
-    else:
-        output_workbook = openpyxl.Workbook()
-        output_sheet = output_workbook.create_sheet(sheet_name)
-    # Copy the header row to the output sheet
-    if output_sheet.max_row == 1:
-        header_row = next(input_sheet.iter_rows(values_only=True))
-        output_sheet.append(header_row)
+    header_row = next(input_sheet.iter_rows(values_only=True))
+    output_workbook, output_sheet = load_or_create_output_sheet(output_file, sheet_name, header_row)
     output_sheet.delete_rows(idx=2, amount=output_sheet.max_row - 1) #to ensure we are at a fresh start each time
     valid_rows = []
 
@@ -98,43 +90,23 @@ def separate_valid_uris_and_invalid_uris(input_file, output_file, sheet_name, mu
     output_workbook.save(output_file)
     input_workbook.save(input_file)
 
-#ACTUALLY WHAT WE WANT TO DO IS REMOVE ALL NON EXISTING AND JSUT REPOPULATE
 def remove_parentheses_from_column(input_file, output_file, column_index, sheet_name):
     # Load the workbook and active sheet from the input file
     input_workbook = openpyxl.load_workbook(input_file)
-    input_sheet = input_workbook[sheet_name] 
+    input_sheet = input_workbook[sheet_name]
 
-    #Create or load workbook and sheet
-    if os.path.exists(output_file):
-        output_workbook = openpyxl.load_workbook(output_file)
-        if sheet_name in output_workbook.sheetnames:
-            output_sheet = output_workbook[sheet_name]
-        else:
-            output_sheet = output_workbook.create_sheet(sheet_name)
-    else:
-        output_workbook = openpyxl.Workbook()
-        output_sheet = output_workbook.create_sheet(sheet_name)
-
-    # Copy the header row to the output sheet
-    if output_sheet.max_row == 1:
-        print('header row')
-        header_row = next(input_sheet.iter_rows(values_only=True))
-        print(header_row)
-        output_sheet.append(header_row)
-
+    header_row = next(input_sheet.iter_rows(values_only=True))
+    output_workbook, output_sheet = load_or_create_output_sheet(output_file, sheet_name, header_row)
     # Copy the data with parentheses removed to the output sheet
     for row in input_sheet.iter_rows(min_row=2, values_only=True):
         original_value = row[column_index - 1]
         if isinstance(original_value, str) and "(" in original_value:
-            print('original_value', original_value)
             modified_value = original_value.split('(')[0].strip()
-            print('modified value', modified_value)
         else:
             modified_value = original_value
         row = list(row)
         row[column_index - 1] = modified_value
         output_sheet.append(row)
-        print('row being appended:', row)
 
     # Save the new workbook to the output file
     output_workbook.save(output_file)
