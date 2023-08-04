@@ -83,7 +83,7 @@ spotify = spotipy_oauth()
 my_playlist_names = get_sheet_names(og_path)
 
 #my_playlist_names.pop(0)
-playlist_metadata = create_playlists(['spice (pepper)'])
+playlist_metadata = create_playlists(my_playlist_names)
 
 first_iteration(playlist_metadata)
 second_iteration(playlist_metadata)
