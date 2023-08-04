@@ -34,7 +34,7 @@ def add_tracks_to_playlist(track_uris, playlist_id):
     print('Processing these tracks:', track_uris)
     spotify.playlist_add_items(playlist_id, track_uris) 
 
-def grab_uris_and_append_to_excel(music_metadata, path, sheet_name): #look into speeding this up somehow 
+def grab_uris_and_append_to_excel(music_metadata, path, sheet_name):
     uris = []
     for metadata in music_metadata:
         spotify_uri = get_spotify_uri(metadata['title'], metadata['artist'])
@@ -64,7 +64,6 @@ def first_iteration(playlist_info):
         uris = extract_uri_from_excel(og_path, entry['name'])
         register_songs_to_playlist(uris, entry['id'])
 
-test_second_uris = []
 def second_iteration(playlist_info):
     for entry in playlist_info:
         remove_parentheses_from_column(not_found_path, not_found_no_title_parentheses, 1, entry['name'])
@@ -72,22 +71,12 @@ def second_iteration(playlist_info):
         print(second_song_metadata)
         grab_uris_and_append_to_excel(second_song_metadata, not_found_no_title_parentheses, entry['name'])
         separate_valid_uris_and_invalid_uris(not_found_no_title_parentheses, not_found_path, entry['name']) 
-        second_uris = extract_uri_from_excel(not_found_no_title_parentheses, entry['name']) #bit janky here too, ideally wed be adding the new URIs from the og path, only grabbing newly added ones etc
-        if second_uris:
-            global test_second_uris
-            test_second_uris = test_second_uris + second_uris
+        second_uris = extract_uri_from_excel(not_found_no_title_parentheses, entry['name'])
         register_songs_to_playlist(second_uris, entry['id'])
 
-# for the second iteration, we want to go back through the all songs with not found and remove the ones that were found
 spotify = spotipy_oauth()
 my_playlist_names = get_sheet_names(og_path)
-
-#my_playlist_names.pop(0)
 playlist_metadata = create_playlists(my_playlist_names)
 
 first_iteration(playlist_metadata)
 second_iteration(playlist_metadata)
-
-# print('all songs captured on the second attempt')
-# print(len(test_second_uris))
-# print(test_second_uris)
